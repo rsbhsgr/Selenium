@@ -1,0 +1,180 @@
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.support.ui import Select
+import time
+
+
+def sign_in(driver, username, password):
+    username_field = driver.find_element_by_id("ap_email")
+    password_field = driver.find_element_by_id("ap_password")
+    
+    username_field.send_keys(username)
+    password_field.send_keys(password)
+    
+    time.sleep(3)
+    
+    driver.find_element_by_xpath("""//*[@id="signInSubmit"]""").click()
+
+def click_report_type(driver, rpt_type):    
+    
+    driver.find_element_by_xpath("""//*[@id="tresah"]/div/div/div[2]/div[2]/section/div[2]/div[1]/div[2]/span/span/span/span/span""").click()
+    
+    time.sleep(3)
+    
+    if(rpt_type == 'Search terms'):
+        rpt_path = """//*[@id="dropdown1_0"]"""
+    elif(rpt_type == 'Targeting'):
+        rpt_path = """//*[@id="dropdown1_1"]"""
+    elif(rpt_type == 'Advertised Product'):
+        rpt_path = """//*[@id="dropdown1_2"]"""
+        
+    driver.find_element_by_xpath(rpt_path).click()
+
+def click_report_period(driver, day_beg, day_end):
+    
+    driver.find_element_by_xpath("""//*[@id="tresah"]/div/div/div[2]/div[2]/section/div[2]/div[2]/div[1]/div/div/span/span/span/span""").click()
+    
+    time.sleep(3)
+    
+    driver.find_element_by_link_text('Customized').click()
+    
+    time.sleep(2)
+    
+    driver.find_element_by_css_selector("input[data-reactid='.0.0.1.$page.0.1.1.0.1.0.1']").click()
+    
+    time.sleep(2)
+    
+    driver.find_element_by_link_text(day_beg).click()
+
+    time.sleep(2)
+    
+    driver.find_element_by_css_selector("input[data-reactid='.0.0.1.$page.0.1.1.0.1.0.3']").click()
+    
+    time.sleep(2)
+    
+    driver.find_element_by_link_text(day_end).click()
+    
+    time.sleep(2)
+    
+    driver.find_element_by_css_selector("input[data-reactid='.0.0.1.$page.0.1.1.0.1.0.4.0.0']").click()
+        
+    
+def create_report(driver):
+    driver.find_element_by_xpath("""//*[@id="tresah"]/div/div/div[2]/div[2]/section/div[1]/span/span/input""").click()
+    
+    
+def download_latest(driver):
+    driver.find_element_by_css_selector("a[data-reactid='.0.0.1.$page.1.0.0.1.0.0.0.0.3.$0.0.0.$scrollable_cells.0.$cell_4.1.1.0']").click()
+    
+    
+def click_advertising_report(driver):
+    driver.find_element_by_xpath("""//*[@id="cm-app"]/div/div/div[1]/div/nav/ul/li[4]/span/a""").click()
+    
+def select_brand(driver, position):
+    driver.find_element_by_xpath("""//*[@id="currentBrandNameDiv"]""").click()
+    driver.find_element_by_xpath("""//*[@id="dropDownBrandNameContainer"]/div[""" + position + """]/span/a""").click()
+    
+def remove_warning(driver):
+    driver.find_element_by_xpath("""//*[@type="warning"]/button""").click()
+
+rpt_types = ['Search terms', 'Targeting', 'Advertised Product'] 
+brands = {
+            'Brand': '1',
+            'Brand2': '2',
+            'Brand3': '3',
+            'Brand4': '4',
+            'Brand5': '5',
+            'Brand6': '6',
+            'Brand7': '7',
+            'Brand8': '8',
+            'Brand9': '9',
+            'Brand10': '10',
+            'Brand11': '11',
+            'Brand12': '12',
+            'Brand13': '13',
+            'Brand14': '14',
+            'Brand15': '15'
+         }
+    
+driver = webdriver.Chrome('C:/Users/Rishabh.Sagar/chromedriver.exe')
+driver.maximize_window()
+driver.get('https://advertising.amazon.ca/sign-in')
+
+
+driver.find_element_by_xpath("""/html/body/div[2]/div/div/div/div/div/div/div[2]/div[2]/div/form/div[2]/div/label""").click()
+
+time.sleep(2)
+
+driver.find_element_by_xpath("""/html/body/div[2]/div/div/div/div/div/div/div[2]/div[2]/div/form/div[4]/div/button""").click()
+
+time.sleep(4)
+
+sign_in(driver, 'Type user name here', 'Type password here')
+
+time.sleep(3)
+
+for brand_name in brands:
+    
+    select_brand(driver, brands[brand_name])
+    
+    time.sleep(10)
+    
+    try:
+        remove_warning(driver)
+    except:
+        pass
+
+    time.sleep(2)
+    
+    click_advertising_report(driver)
+    
+    time.sleep(5)
+
+    for rpt in rpt_types:
+        click_report_type(driver, rpt)
+    
+        time.sleep(3)
+        
+        click_report_period(driver, '1', '15')
+        
+        time.sleep(3)
+        
+        create_report(driver)
+        
+        time.sleep(20)
+        
+        download_latest(driver)
+        
+        time.sleep(5)
+
+
+# Cleaning files
+import pandas as pd
+import glob
+import numpy as np
+
+targeting_df = pd.concat([pd.read_excel(f) for f in glob.glob(r'C:\Users\Rishabh.Sagar\Desktop\Targeting\Sponsored Products Targeting report*.xlsx')], ignore_index = True)
+targeting_df['Year'] = targeting_df['Start Date'].dt.year
+targeting_df[['Cost Per Click (CPC)','Spend','14 Day Total Sales ($)']] = targeting_df[['Cost Per Click (CPC)','Spend','14 Day Total Sales ($)']].replace(0,np.nan)
+targeting_df['Month'] = pd.to_datetime('01022019', format='%d%m%Y')
+targeting_df = targeting_df[['Year','Month','Start Date','End Date','Currency','Campaign Name','Match Type','Impressions','Clicks','Click-Thru Rate (CTR)','Cost Per Click (CPC)','Spend','Advertising Cost of Sales (ACoS) ','Return on Advertising Spend (RoAS)','14 Day Total Sales ($)','14 Day Total Orders (#)','14 Day Total Units (#)','14 Day Conversion Rate']]
+
+advertised_df = pd.concat([pd.read_excel(f) for f in glob.glob(r'C:\Users\Rishabh.Sagar\Desktop\Advertised_Product\Sponsored Products Advertised Products Report*.xlsx')], ignore_index = True)
+advertised_df['Year'] = advertised_df['Start Date'].dt.year
+advertised_df[['Cost Per Click (CPC)','Spend','14 Day Total Sales ($)']] = advertised_df[['Cost Per Click (CPC)','Spend','14 Day Total Sales ($)']].replace(0,np.nan)
+
+asins_mapped = pd.read_csv(r'C:\Users\Rishabh.Sagar\Desktop\ASINs.csv', encoding='utf-8')
+advertised_df = pd.merge(advertised_df, asins_mapped, how='left', left_on='Advertised ASIN', right_on='ASIN')
+
+advertised_df['Month'] = pd.to_datetime('01022019', format='%d%m%Y')
+advertised_df = advertised_df[['Year','Month','Start Date','End Date','Currency','Campaign Name','Advertised ASIN','Product','Impressions','Clicks','Click-Thru Rate (CTR)','Cost Per Click (CPC)','Spend','14 Day Total Sales ($)','Advertising Cost of Sales (ACoS) ','Return on Advertising Spend (RoAS)','14 Day Total Orders (#)','14 Day Total Units (#)','14 Day Conversion Rate']]
+
+search_df = pd.concat([pd.read_excel(f) for f in glob.glob(r'C:\Users\Rishabh.Sagar\Desktop\Search_terms\Sponsored Products Search Terms Report*.xlsx')], ignore_index = True)
+search_df['Year'] = search_df['Start Date'].dt.year
+search_df[['Cost Per Click (CPC)','Spend','14 Day Total Sales ($)']] = search_df[['Cost Per Click (CPC)','Spend','14 Day Total Sales ($)']].replace(0,np.nan)
+search_df['Month'] = pd.to_datetime('01022019', format='%d%m%Y')
+search_df = search_df[['Year','Month','Start Date','End Date','Currency','Campaign Name','Targeting','Match Type','Customer Search Term','Impressions','Clicks','Click-Thru Rate (CTR)','Cost Per Click (CPC)','Spend','14 Day Total Sales ($)','Advertising Cost of Sales (ACoS) ','Return on Advertising Spend (RoAS)','14 Day Total Orders (#)','14 Day Total Units (#)','14 Day Conversion Rate','14 Day Advertised ASIN Units (#)','14 Day Brand Halo ASIN Units (#)','14 Day Advertised ASIN Sales ($)','14 Day Brand Halo ASIN Sales ($)']]
+
+targeting_df.to_csv(r'C:\Users\Rishabh.Sagar\Desktop\targeting.csv')
+advertised_df.to_csv(r'C:\Users\Rishabh.Sagar\Desktop\advertised.csv')
+search_df.to_csv(r'C:\Users\Rishabh.Sagar\Desktop\search.csv')
